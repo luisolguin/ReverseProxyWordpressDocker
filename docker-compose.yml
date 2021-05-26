@@ -1,20 +1,30 @@
+###################################################################
+# Docker compose con Proxy inverso para montar varios wordpress
+# Con SSL por certbot.
+###################################################################
 version: '3.7'
 
 services:
+  ###################################################################
+  # Servicio de NGINX que funje como proxy inverso
+  ###################################################################
   nginx-proxy:
     image: jwilder/nginx-proxy
     restart: always
     ports:
-      - "80:80"
-      - "443:443"
+      - "80:80"   #Se enlaza el puerto 80 de la VM con el puerto 80 del contenedor HTTP
+      - "443:443" #Se enlaza el puerto 443 de la VM con el puerto 443 del contenedor HTTPS
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
       - certs:/etc/nginx/certs:ro
       - vhostd:/etc/nginx/vhost.d
       - html:/usr/share/nginx/html
     labels:
-      - com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy
-
+      - com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy #etiqueta para acompañar el contenedor con el NGNIX
+      
+  ###################################################################
+  # Servicio compañero de NGINX que se encarga de general los SSL
+  ###################################################################
   letsencrypt:
     image: jrcs/letsencrypt-nginx-proxy-companion
     restart: always
@@ -26,31 +36,37 @@ services:
       - html:/usr/share/nginx/html
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
-
+  ###################################################################
+  # Servicio que se encarga de Ejecutar el Wordpress 1
+  # Documentación de la imagen: https://hub.docker.com/_/wordpress/
+  ###################################################################
   wp:
-    image: wordpress:latest # https://hub.docker.com/_/wordpress/
+    image: wordpress:latest 
     restart: always
-    expose:
-      - "80" # change ip if required
+    expose: 
+      - "80" # Se expone el puerto 80 del contenedor a la red interna de docker.
     volumes:
       - ./config/php.conf.ini:/usr/local/etc/php/conf.d/conf.ini
       - ./wp-app:/var/www/html # Full wordpress project
       - ./plugin-name/trunk/:/var/www/html/wp-content/plugins/plugin-name # Plugin development
       - ./theme-name/trunk/:/var/www/html/wp-content/themes/theme-name # Theme development
     environment:
-      WORDPRESS_DB_HOST: db
-      WORDPRESS_DB_NAME: "${DB_NAME}"
-      WORDPRESS_DB_USER: root
-      WORDPRESS_DB_PASSWORD: "${DB_ROOT_PASSWORD}"
-      VIRTUAL_HOST: sdprueba.lolguin.info,www.sdprueba.lolguin.info
-      LETSENCRYPT_HOST: sdprueba.lolguin.info,www.sdprueba.lolguin.info
-      LETSENCRYPT_EMAIL: lujeolhe@gmail.com
+      WORDPRESS_DB_HOST: db                       #Host del servicio de Bases de Datos
+      WORDPRESS_DB_NAME: "${DB_NAME}"             #Nombre de la Base de datos
+      WORDPRESS_DB_USER: root                     #Nombre del usuario de la Base de Datos
+      WORDPRESS_DB_PASSWORD: "${DB_ROOT_PASSWORD}" # Contraseña de la base de datos
+      VIRTUAL_HOST: sdprueba.lolguin.info,www.sdprueba.lolguin.info #Variable de para el proxy inverso
+      LETSENCRYPT_HOST: sdprueba.lolguin.info,www.sdprueba.lolguin.info # Variable de para el SSL
+      LETSENCRYPT_EMAIL: lujeolhe@gmail.com #correo con el que esta regitrados lo dominios
     depends_on:
       - db
       - nginx-proxy
       - letsencrypt  
 
- 
+  ###################################################################
+  # Servicio de wpcli para las configuraciones iniciales del wordpress 1
+  # Documentación de la imagen: https://hub.docker.com/_/wordpress/
+  ################################################################### 
   wpcli:
     image: wordpress:cli
     volumes:
@@ -60,8 +76,12 @@ services:
       - db
       - wp
 
+  ###################################################################
+  # Servicio de la BDD de mysql
+  # https://hub.docker.com/_/mysql
+  ################################################################### 
   db:
-    image: mysql:latest # https://hub.docker.com/_/mysql/ - or mariadb https://hub.docker.com/_/mariadb
+    image: mysql:latest
     ports:
       - ${IP}:3306:3306 # change ip if required
     command: [
@@ -73,10 +93,13 @@ services:
       - ./wp-data:/docker-entrypoint-initdb.d
       - db_data:/var/lib/mysql
     environment:
-      MYSQL_DATABASE: "${DB_NAME}"
-      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
-      #######################################Segundo WP#####################################
-
+      MYSQL_DATABASE: "${DB_NAME}" # Nombre de la base de datos
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}" # Contraseña de root para la base de datos
+   
+  ###################################################################
+  # Servicio que se encarga de Ejecutar el Wordpress 2
+  # Documentación de la imagen: https://hub.docker.com/_/wordpress/
+  ###################################################################
  
   wp2:
     image: wordpress:latest # https://hub.docker.com/_/wordpress/
@@ -89,19 +112,22 @@ services:
       - ./plugin-name2/trunk/:/var/www/html/wp-content/plugins/plugin-name # Plugin development
       - ./theme-name2/trunk/:/var/www/html/wp-content/themes/theme-name # Theme development
     environment:
-      WORDPRESS_DB_HOST: db2
-      WORDPRESS_DB_NAME: "${DB_NAME2}"
-      WORDPRESS_DB_USER: root
-      WORDPRESS_DB_PASSWORD: "${DB_ROOT_PASSWORD2}"
-      VIRTUAL_HOST: sdprueba2.lolguin.info,www.sdprueba2.lolguin.info
-      LETSENCRYPT_HOST: sdprueba2.lolguin.info,www.sdprueba2.lolguin.info
-      LETSENCRYPT_EMAIL: lujeolhe@gmail.com
+      WORDPRESS_DB_HOST: db2                        # Host del servicio de Bases de Datos
+      WORDPRESS_DB_NAME: "${DB_NAME2}"              # Nombre de la Base de datos
+      WORDPRESS_DB_USER: root                       # Nombre del usuario de la Base de Datos
+      WORDPRESS_DB_PASSWORD: "${DB_ROOT_PASSWORD2}" # Contraseña de la base de datos
+      VIRTUAL_HOST: sdprueba2.lolguin.info,www.sdprueba2.lolguin.info # Variable de para el proxy inverso
+      LETSENCRYPT_HOST: sdprueba2.lolguin.info,www.sdprueba2.lolguin.info # Variable de para el SSL
+      LETSENCRYPT_EMAIL: lujeolhe@gmail.com  #correo con el que esta regitrados lo dominios
     depends_on:
       - db2
       - nginx-proxy
       - letsencrypt  
 
- 
+  ###################################################################
+  # Servicio que se encarga de Ejecutar el Wordpress 2
+  # Documentación de la imagen: https://hub.docker.com/_/wordpress/
+  ###################################################################
   wpcli2:
     image: wordpress:cli
     volumes:
@@ -110,9 +136,12 @@ services:
     depends_on:
       - db2
       - wp2
-
+  ###################################################################
+  # Servicio de la BDD de mysql
+  # https://hub.docker.com/_/mysql
+  ###################################################################
   db2:
-    image: mysql:latest # https://hub.docker.com/_/mysql/ - or mariadb https://hub.docker.com/_/mariadb
+    image: mysql:latest 
     ports:
       - ${IP}:3307:3307 # change ip if required
     command: [
@@ -126,7 +155,8 @@ services:
     environment:
       MYSQL_DATABASE: "${DB_NAME2}"
       MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD2}"
-     
+  
+  
 volumes:
   db_data: 
   db_data2: 
