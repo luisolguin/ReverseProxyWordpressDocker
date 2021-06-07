@@ -55,9 +55,9 @@ services:
       WORDPRESS_DB_NAME: "${DB_NAME}"             #Nombre de la Base de datos
       WORDPRESS_DB_USER: root                     #Nombre del usuario de la Base de Datos
       WORDPRESS_DB_PASSWORD: "${DB_ROOT_PASSWORD}" # Contraseña de la base de datos
-      VIRTUAL_HOST: sdprueba.lolguin.info,www.sdprueba.lolguin.info #Variable de para el proxy inverso
-      LETSENCRYPT_HOST: sdprueba.lolguin.info,www.sdprueba.lolguin.info # Variable de para el SSL
-      LETSENCRYPT_EMAIL: lujeolhe@gmail.com #correo con el que esta regitrados lo dominios
+      VIRTUAL_HOST: centos.lolguin.info,www.centos.lolguin.info" #Variable de para el proxy inverso
+      LETSENCRYPT_HOST: centos.lolguin.info,www.centos.lolguin.info # Variable de para el SSL
+      LETSENCRYPT_EMAIL: lujeolhe@gmail.com  #correo con el que esta regitrados lo dominios
     depends_on:
       - db
       - nginx-proxy
@@ -116,8 +116,8 @@ services:
       WORDPRESS_DB_NAME: "${DB_NAME2}"              # Nombre de la Base de datos
       WORDPRESS_DB_USER: root                       # Nombre del usuario de la Base de Datos
       WORDPRESS_DB_PASSWORD: "${DB_ROOT_PASSWORD2}" # Contraseña de la base de datos
-      VIRTUAL_HOST: sdprueba2.lolguin.info,www.sdprueba2.lolguin.info # Variable de para el proxy inverso
-      LETSENCRYPT_HOST: sdprueba2.lolguin.info,www.sdprueba2.lolguin.info # Variable de para el SSL
+      VIRTUAL_HOST: centos2.lolguin.info,www.centos2.lolguin.info  # Variable de para el proxy inverso
+      LETSENCRYPT_HOST: centos2.lolguin.info,www.centos2.lolguin.info # Variable de para el SSL
       LETSENCRYPT_EMAIL: lujeolhe@gmail.com  #correo con el que esta regitrados lo dominios
     depends_on:
       - db2
