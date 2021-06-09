@@ -9,7 +9,7 @@ services:
   # Servicio de NGINX que funje como proxy inverso
   ###################################################################
   nginx-proxy:
-    image: jwilder/nginx-proxy
+    image: jwilder/nginx-proxy:0.9
     restart: always
     ports:
       - "80:80"   #Se enlaza el puerto 80 de la VM con el puerto 80 del contenedor HTTP
@@ -26,7 +26,7 @@ services:
   # Servicio compañero de NGINX que se encarga de general los SSL
   ###################################################################
   letsencrypt:
-    image: jrcs/letsencrypt-nginx-proxy-companion
+    image: jrcs/letsencrypt-nginx-proxy-companion:2.1
     restart: always
     environment:
       - NGINX_PROXY_CONTAINER=nginx-proxy
@@ -41,7 +41,7 @@ services:
   # Documentación de la imagen: https://hub.docker.com/_/wordpress/
   ###################################################################
   wp:
-    image: wordpress:latest 
+    image: wordpress:5.7.1-php7.4-apache 
     restart: always
     expose: 
       - "80" # Se expone el puerto 80 del contenedor a la red interna de docker.
@@ -55,9 +55,9 @@ services:
       WORDPRESS_DB_NAME: "${DB_NAME}"             #Nombre de la Base de datos
       WORDPRESS_DB_USER: root                     #Nombre del usuario de la Base de Datos
       WORDPRESS_DB_PASSWORD: "${DB_ROOT_PASSWORD}" # Contraseña de la base de datos
-      VIRTUAL_HOST: centos.lolguin.info,www.centos.lolguin.info" #Variable de para el proxy inverso
-      LETSENCRYPT_HOST: centos.lolguin.info,www.centos.lolguin.info # Variable de para el SSL
-      LETSENCRYPT_EMAIL: lujeolhe@gmail.com  #correo con el que esta regitrados lo dominios
+      VIRTUAL_HOST: "{WWW_WEBPAGE_1}" #Variable de para el proxy inverso
+      LETSENCRYPT_HOST: "{WWW_WEBPAGE_1}" # Variable de para el SSL
+      LETSENCRYPT_EMAIL: "{EMAIL_1}"#correo con el que esta regitrados lo dominios
     depends_on:
       - db
       - nginx-proxy
@@ -116,9 +116,9 @@ services:
       WORDPRESS_DB_NAME: "${DB_NAME2}"              # Nombre de la Base de datos
       WORDPRESS_DB_USER: root                       # Nombre del usuario de la Base de Datos
       WORDPRESS_DB_PASSWORD: "${DB_ROOT_PASSWORD2}" # Contraseña de la base de datos
-      VIRTUAL_HOST: centos2.lolguin.info,www.centos2.lolguin.info  # Variable de para el proxy inverso
-      LETSENCRYPT_HOST: centos2.lolguin.info,www.centos2.lolguin.info # Variable de para el SSL
-      LETSENCRYPT_EMAIL: lujeolhe@gmail.com  #correo con el que esta regitrados lo dominios
+      VIRTUAL_HOST: "{WWW_WEBPAGE_2}"# Variable de para el proxy inverso
+      LETSENCRYPT_HOST: "{WWW_WEBPAGE_2}" # Variable de para el SSL
+      LETSENCRYPT_EMAIL: "{EMAIL_2}"#correo con el que esta regitrados lo dominios
     depends_on:
       - db2
       - nginx-proxy
