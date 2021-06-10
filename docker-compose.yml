@@ -45,7 +45,7 @@ services:
     expose: 
       - "80" # Se expone el puerto 80 del contenedor a la red interna de docker.
     volumes:
-      - ./config/php.conf.ini:/usr/local/etc/php/conf.d/conf.ini
+      - ./wp1/config/php.conf.ini:/usr/local/etc/php/conf.d/conf.ini
       - ./wp1/wp-public:/var/www/html # Full wordpress project
         #- ./wp1/plugin-name/trunk/:/var/www/html/wp-content/plugins/plugin-name # Plugin development
         #- ./wp1/theme-name/trunk/:/var/www/html/wp-content/themes/theme-name # Theme development
