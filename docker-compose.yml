@@ -95,9 +95,26 @@ services:
     environment:
       MYSQL_DATABASE: "${DB_NAME}" # Nombre de la base de datos
       MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}" # Contraseña de root para la base de datos
-   
-    
-volumes:
+  ###################################################################
+  # Servicio de la BDD de mysql
+  # https://hub.docker.com/_/mysql
+  ################################################################### 
+  phpmyadmin:
+    image: phpmyadmin:latest
+    restart: always
+    expose:
+      - "80"
+    environment:
+      #PMA_ARBITRARY: 1
+      PMA_HOST: db
+      #PMA_ABSOLUTE_URI: "${PMA_URL}" #Variable de para el proxy inverso
+      VIRTUAL_HOST: "${PMA_URL}" #Variable de para el proxy inverso
+      LETSENCRYPT_HOST: "${PMA_URL}" # Variable de para el SSL
+      LETSENCRYPT_EMAIL: "${EMAIL}" #correo con el que esta regitrados lo dominios
+    depends_on:
+      - db
+
+volumes:  
   db_data:
   certs:
   html:
