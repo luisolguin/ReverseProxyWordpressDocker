@@ -113,8 +113,128 @@ services:
       LETSENCRYPT_EMAIL: "${EMAIL}" #correo con el que esta regitrados lo dominios
     depends_on:
       - db
+  ###################################################################
+  # Servicio de Explorador de archivos web
+  # https://hub.docker.com/r/luisolguin/tiny-files-manager:alpine3.11
+  ################################################################### 
+  filemngr:
+    image: luisolguin/tiny-files-manager:alpine3.11-V0.3
+    restart: always
+    expose:
+      - "80"
+    environment:
+      TNYF_ADMIN_NICK: "${TFM_ADM}"
+      TNYF_ADMIN_PWD: "${TFM_ADMPSW}" 
+      TNYF_USR_NICK: "${TFM_ADM}"
+      TNYF_USR_PWD: "${TFM_ADMPSW}"  
+      VIRTUAL_HOST: "${TFM_URL}" #Variable de para el proxy inverso
+      LETSENCRYPT_HOST: "${TFM_URL}" # Variable de para el SSL
+      LETSENCRYPT_EMAIL: "${EMAIL}" #correo con el que esta regitrados lo dominios
+    volumes:
+      - ./wp1:/data      
+#====================================================================================
 
-volumes:  
+  ###################################################################
+  # Servicio que se encarga de Ejecutar el Wordpress 2
+  # Documentación de la imagen: https://hub.docker.com/_/wordpress/
+  ###################################################################
+  wp2:
+    image: wordpress:5.5.3-php7.4
+    restart: always
+    expose: 
+      - "80" # Se expone el puerto 80 del contenedor a la red interna de docker.
+    volumes:
+      - ./wp2/config/php.conf.ini:/usr/local/etc/php/conf.d/conf.ini
+      - ./wp2/wp-public:/var/www/html # Full wordpress project
+        #- ./wp1/plugin-name/trunk/:/var/www/html/wp-content/plugins/plugin-name # Plugin development
+        #- ./wp1/theme-name/trunk/:/var/www/html/wp-content/themes/theme-name # Theme development
+    environment:
+      WORDPRESS_DB_HOST: db2                       #Host del servicio de Bases de Datos
+      WORDPRESS_DB_NAME: "${DB_NAME2}"             #Nombre de la Base de datos
+      WORDPRESS_DB_USER: root                     #Nombre del usuario de la Base de Datos
+      WORDPRESS_DB_PASSWORD: "${DB_ROOT_PASSWORD2}" # Contraseña de la base de datos
+      WORDPRESS_TABLE_PREFIX: "${WP_PREFIX2}"
+      VIRTUAL_HOST: "${WWW_DOMAIN2}" #Variable de para el proxy inverso
+      LETSENCRYPT_HOST: "${WWW_DOMAIN2}" # Variable de para el SSL
+      LETSENCRYPT_EMAIL: "${EMAIL}" #correo con el que esta regitrados lo dominios
+    depends_on:
+      - db2
+      - nginx-proxy
+      - letsencrypt
+
+  ###################################################################
+  # Servicio de wpcli para las configuraciones iniciales del wordpress 1
+  # Documentación de la imagen: https://hub.docker.com/_/wordpress/
+  ################################################################### 
+  wpcli2:
+    image: wordpress:cli-php7.0
+    volumes:
+      - ./wp2/config/php.conf.ini:/usr/local/etc/php/conf.d/conf.ini
+      - ./wp2/wp-public:/var/www/html
+    depends_on:
+      - db2
+      - wp2
+
+  ###################################################################
+  # Servicio de la BDD de mysql
+  # https://hub.docker.com/_/mysql
+  ################################################################### 
+  db2:
+    image: mysql:latest
+    ports:
+      - ${IP}:3307:3307 # change ip if required
+    command: [
+        '--default_authentication_plugin=mysql_native_password',
+        '--character-set-server=utf8mb4',
+        '--collation-server=utf8mb4_unicode_ci'
+    ]
+    volumes:
+      - ./wp2/wp-data:/docker-entrypoint-initdb.d
+      - db_data2:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: "${DB_NAME2}" # Nombre de la base de datos
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD2}" # Contraseña de root para la base de datos
+  ###################################################################
+  # Servicio de la BDD de mysql
+  # https://hub.docker.com/_/mysql
+  ################################################################### 
+  phpmyadmin2:
+    image: phpmyadmin:latest
+    restart: always
+    expose:
+      - "80"
+    environment:
+      #PMA_ARBITRARY: 1
+      PMA_HOST: db2
+      #PMA_ABSOLUTE_URI: "${PMA_URL}" #Variable de para el proxy inverso
+      VIRTUAL_HOST: "${PMA_URL2}" #Variable de para el proxy inverso
+      LETSENCRYPT_HOST: "${PMA_URL2}" # Variable de para el SSL
+      LETSENCRYPT_EMAIL: "${EMAIL}" #correo con el que esta regitrados lo dominios
+      #PMA_PORT: 3306    
+    depends_on:
+      - db2
+  ###################################################################
+  # Servicio de Explorador de archivos web
+  # https://hub.docker.com/r/luisolguin/tiny-files-manager:alpine3.11
+  ################################################################### 
+  filemngr2:
+    image: luisolguin/tiny-files-manager:alpine3.11-V0.3
+    restart: always
+    expose:
+      - "80"
+    environment:
+      TNYF_ADMIN_NICK: "${TFM_ADM2}"
+      TNYF_ADMIN_PWD: "${TFM_ADMPSW2}" 
+      TNYF_USR_NICK: "${TFM_ADM2}"
+      TNYF_USR_PWD: "${TFM_ADMPSW2}"  
+      VIRTUAL_HOST: "${TFM_URL2}" #Variable de para el proxy inverso
+      LETSENCRYPT_HOST: "${TFM_URL2}" # Variable de para el SSL
+      LETSENCRYPT_EMAIL: "${EMAIL}" #correo con el que esta regitrados lo dominios
+    volumes:
+      - ./wp2:/data
+
+volumes:
+  db_data2:  
   db_data:
   certs:
   html:
