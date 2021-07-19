@@ -1,6 +1,6 @@
 #!/bin/bash
 #Comando para actualizar el sistema
-sudo yum update
+sudo yum update -y
 #comando para instalar los paquetes auxiliares necesarios
 sudo yum install -y yum-utils device-mapper-persistent-data lvm2
 #Comando para agregar los repositorios de Docker
