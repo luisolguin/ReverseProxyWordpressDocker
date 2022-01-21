@@ -16,5 +16,8 @@ sudo curl -L "https://github.com/docker/compose/releases/download/1.23.2/docker-
 sudo chmod +x /usr/local/bin/docker-compose
 sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 sudo docker-compose --version
+#comando para agregar el usuario al grupo de docker
+userNameBase=${USER}
+usermod -a -G docker userNameBase
 #comando para levantar los servicios del Docker-Compose
-sudo docker-compose up -d
+#sudo docker-compose up -d
