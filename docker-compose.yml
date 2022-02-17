@@ -139,7 +139,7 @@ services:
   # Documentación de la imagen: https://hub.docker.com/_/wordpress/
   ###################################################################
   wp2:
-    image: wordpress:5.5.3-php7.4
+    image: wordpress:php8.0
     restart: always
     expose: 
       - "80" # Se expone el puerto 80 del contenedor a la red interna de docker.
@@ -167,7 +167,7 @@ services:
   # Documentación de la imagen: https://hub.docker.com/_/wordpress/
   ################################################################### 
   wpcli2:
-    image: wordpress:cli-php7.0
+    image: wordpress:cli-php8.0
     volumes:
       - ./wp2/config/php.conf.ini:/usr/local/etc/php/conf.d/conf.ini
       - ./wp2/wp-public:/var/www/html
@@ -182,7 +182,7 @@ services:
   db2:
     image: mysql:latest
     ports:
-      - ${IP}:3307:3307 # change ip if required
+      - ${IP}:3307:3306 # change ip if required
     command: [
         '--default_authentication_plugin=mysql_native_password',
         '--character-set-server=utf8mb4',
